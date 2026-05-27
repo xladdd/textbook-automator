@@ -1,218 +1,110 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Textbook Compiler</title>
     <style>
-      @keyframes gradient {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
       body {
-        font-family: Verdana, sans-serif;
-        margin: 0;
-        height: 100vh;
+        font-family: sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(-45deg, #ff661a, #ff945e, #ffffff, #f2f2f2);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
+        height: 100vh;
+        background: #f4f4f4;
       }
       .container {
-        background: rgba(255, 255, 255, 0.95);
+        background: white;
         padding: 40px;
         border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         text-align: center;
-        width: 420px;
-      }
-      .upload-group {
-        margin: 25px 0;
-      }
-      .file-label {
-        display: block;
-        margin-bottom: 10px;
-        font-size: 0.85em;
-        color: #555;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      input[type="file"] {
-        display: none;
+        width: 400px;
       }
       .custom-btn {
         background: white;
         border: 2px solid #ff661a;
         color: #ff661a;
-        padding: 12px 25px;
+        padding: 10px 20px;
         border-radius: 50px;
         cursor: pointer;
-        transition: all 0.3s ease;
         display: inline-block;
-        font-weight: bold;
-      }
-      .custom-btn:hover {
-        background: #ff661a;
-        color: white;
+        margin: 10px;
       }
       .loaded {
-        background-color: #00a5a0 !important;
+        background: #00a5a0 !important;
         color: white !important;
         border: 2px solid #00a5a0 !important;
       }
-
       #runBtn {
         background: #ff661a;
         color: white;
         border: none;
-        padding: 15px 50px;
+        padding: 15px 30px;
         border-radius: 50px;
-        margin-top: 30px;
         cursor: pointer;
-        font-weight: bold;
-        text-transform: uppercase;
         width: 100%;
+        margin-top: 20px;
       }
-      #runBtn:hover {
-        background: #e55a00;
+
+      /* Gradient Wash Animation */
+      @keyframes wash {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
       }
       #status {
-        margin-top: 25px;
-        font-size: 0.8em;
-        color: #777;
+        font-weight: bold;
+        margin-top: 20px;
+        background: linear-gradient(90deg, #333 0%, #00a5a0 50%, #333 100%);
+        background-size: 200% auto;
+        color: transparent;
+        -webkit-background-clip: text;
+        animation: wash 3s linear infinite;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h2 style="color: #333; margin-bottom: 30px">Textbook Compiler</h2>
-
-      <div class="upload-group">
-        <label class="file-label">Manuscript PDF</label>
-        <label class="custom-btn" id="pdfLabel" for="pdfInput"
-          >Choose File</label
-        >
-        <input type="file" id="pdfInput" accept=".pdf" />
-      </div>
-
-      <div class="upload-group">
-        <label class="file-label">Type-to-Snippet Map (CSV)</label>
-        <label class="custom-btn" id="csvLabel" for="csvInput"
-          >Choose File</label
-        >
-        <input type="file" id="csvInput" accept=".csv" />
-      </div>
-
+      <h2>Textbook Compiler</h2>
+      <label class="custom-btn" id="pdfLabel" for="pdfInput"
+        >Choose Manuscript</label
+      >
+      <input type="file" id="pdfInput" style="display: none" />
+      <label class="custom-btn" id="csvLabel" for="csvInput"
+        >Choose CSV Map</label
+      >
+      <input type="file" id="csvInput" style="display: none" />
       <button id="runBtn">COMPILE AUTOMATION</button>
       <div id="status">Ready to initialize</div>
     </div>
 
     <script>
-      // 1. File Handling Logic
-      const setupFileHandler = (inputId, labelId) => {
-        document.getElementById(inputId).addEventListener("change", (e) => {
-          if (e.target.files.length > 0) {
-            console.log(
-              `[Event] File registered for ${inputId}:`,
-              e.target.files[0].name,
-            );
-            const label = document.getElementById(labelId);
-            label.innerText = "File loaded";
-            label.classList.add("loaded");
-          }
-        });
+      const log = (msg) => {
+        console.log(`[Frontend] ${msg}`);
+        return msg;
       };
-      setupFileHandler("pdfInput", "pdfLabel");
-      setupFileHandler("csvInput", "csvLabel");
 
-      // 2. Compilation Pipeline
-      document.getElementById("runBtn").onclick = async () => {
-        console.log("[Event] Button clicked: COMPILE AUTOMATION");
-        const status = document.getElementById("status");
-        const pdfFile = document.getElementById("pdfInput").files[0];
-        const csvFile = document.getElementById("csvInput").files[0];
-
-        if (!pdfFile || !csvFile) {
-          console.warn("[Process] User tried to run without files");
-          return alert("Please select both files first!");
-        }
-
-        status.innerText = "Reading files...";
-
-        const reader = (file) =>
-          new Promise((resolve) => {
-            const fr = new FileReader();
-            fr.onload = () => resolve(fr.result);
-            fr.readAsText(file);
-          });
-
-        try {
-          console.log("[Process] Reading CSV data...");
-          const csvData = await reader(csvFile);
-
-          status.innerText = "Generating Manifest...";
-          console.log("[Process] Fetching Manifest from backend...");
-
-          const manifestRes = await fetch("/api/compile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task: "manifest", data: { csv: csvData } }),
-          });
-
-          const manifestJson = await manifestRes.json();
-          console.log("[Response] Manifest Received:", manifestJson);
-
-          status.innerText = "Generating ExtendScript...";
-          const scriptRes = await fetch("/api/compile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task: "script", data: manifestJson.output }),
-          });
-
-          const scriptData = await scriptRes.json();
-          console.log("[Response] Script Received:", scriptData);
-
-          status.innerText = "Download triggered.";
-          const blob = new Blob([scriptData.output], { type: "text/plain" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "automation.jsx";
-          a.click();
-          console.log("[Process] Download completed");
-        } catch (err) {
-          console.error("[Pipeline Error] Critical failure:", err);
-          status.innerText = "Process Failed: See Console";
-        }
-      };
-    </script>
-  </body>
-</html>
+      // File UI logic
+      ["pdfInput", "csvInput"].forEach((id) =>
+        document.getElementById(id).addEventListener("change", (e) => {
           document.getElementById(id.replace("Input", "Label")).innerText =
             "File loaded";
           document
             .getElementById(id.replace("Input", "Label"))
             .classList.add("loaded");
+          log(`${id} file selected.`);
         }),
       );
 
       document.getElementById("runBtn").onclick = async () => {
+        const status = document.getElementById("status");
         const csvText = await new Response(
           document.getElementById("csvInput").files[0],
         ).text();
-        const status = document.getElementById("status");
 
         try {
-          status.innerText = "Step 1/2: Generating Manifest...";
+          status.innerText = log("Step 1/2: Generating Manifest...");
           const mRes = await fetch("/api/compile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -220,10 +112,10 @@
           });
           const mJson = await mRes.json();
 
-          status.innerText = "Buffer: Waiting...";
+          status.innerText = log("Buffer: Waiting...");
           await new Promise((r) => setTimeout(r, 2000));
 
-          status.innerText = "Step 2/2: Generating Script...";
+          status.innerText = log("Step 2/2: Generating Script...");
           const sRes = await fetch("/api/compile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -231,13 +123,20 @@
           });
           const sJson = await sRes.json();
 
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(new Blob([sJson.output]));
-          a.download = "automation.jsx";
-          a.click();
-          status.innerText = "Finished!";
+          // Dual Download
+          const triggerDl = (content, name) => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(new Blob([content]));
+            a.download = name;
+            a.click();
+          };
+
+          triggerDl(JSON.stringify(mJson.output, null, 2), "manifest.json");
+          triggerDl(sJson.output, "automation.jsx");
+
+          status.innerText = log("Finished! Files downloaded.");
         } catch (e) {
-          status.innerText = "Error - Check Console";
+          status.innerText = log("Error - Check Console");
           console.error(e);
         }
       };
