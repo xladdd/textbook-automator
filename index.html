@@ -1,27 +1,95 @@
-<div style="font-family: sans-serif; color: #333">
-  <h2 style="color: #ff661a">Textbook Automation Compiler</h2>
-  <input type="file" id="pdfInput" />
-  <input type="file" id="csvInput" />
-  <button id="runBtn" style="background-color: #ff661a; color: white">
-    Run Compiler
-  </button>
-  <div id="status" style="margin-top: 20px">Waiting...</div>
-</div>
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      body {
+        font-family: Verdana, sans-serif;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(-45deg, #ff661a, #ff945e, #ffffff, #f2f2f2);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 400px;
+      }
+      .upload-group {
+        margin: 20px 0;
+      }
+      .file-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+        color: #666;
+      }
+      input[type="file"] {
+        display: none;
+      }
+      .custom-btn {
+        background: white;
+        border: 2px solid #ff661a;
+        color: #ff661a;
+        padding: 10px 20px;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: 0.3s;
+        display: inline-block;
+      }
+      .custom-btn:hover {
+        background: #ff661a;
+        color: white;
+      }
+      #runBtn {
+        background: #ff661a;
+        color: white;
+        border: none;
+        padding: 12px 40px;
+        border-radius: 50px;
+        margin-top: 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 style="color: #333">Textbook Compiler</h2>
 
-<script>
-  document.getElementById("runBtn").onclick = async () => {
-    const status = document.getElementById("status");
-    status.innerText = "Analyzing PDF/CSV...";
+      <div class="upload-group">
+        <label class="file-label">Manuscript PDF</label>
+        <label class="custom-btn" for="pdfInput">Choose File</label>
+        <input type="file" id="pdfInput" />
+      </div>
 
-    // 1. Send files to API
-    const response = await fetch("/api/compile", {
-      method: "POST",
-      body: JSON.stringify({
-        /* file data here */
-      }),
-    });
+      <div class="upload-group">
+        <label class="file-label">Type-to-Snippet Map (CSV)</label>
+        <label class="custom-btn" for="csvInput">Choose File</label>
+        <input type="file" id="csvInput" />
+      </div>
 
-    status.innerText = "Generating Script...";
-    // 2. Handle download logic for .json and .jsx
-  };
-</script>
+      <button id="runBtn">COMPILE AUTOMATION</button>
+      <div id="status" style="margin-top: 20px; font-size: 0.8em; color: #888">
+        Ready
+      </div>
+    </div>
+  </body>
+</html>
