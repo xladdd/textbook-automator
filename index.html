@@ -1,1 +1,23 @@
-hello
+<div style="font-family: sans-serif; color: #333;">
+  <h2 style="color: #FF661A;">Textbook Automation Compiler</h2>
+  <input type="file" id="pdfInput">
+  <input type="file" id="csvInput">
+  <button id="runBtn" style="background-color: #FF661A; color: white;">Run Compiler</button>
+  <div id="status" style="margin-top: 20px;">Waiting...</div>
+</div>
+
+<script>
+document.getElementById('runBtn').onclick = async () => {
+  const status = document.getElementById('status');
+  status.innerText = "Analyzing PDF/CSV...";
+  
+  // 1. Send files to API
+  const response = await fetch('/api/compile', {
+    method: 'POST',
+    body: JSON.stringify({ /* file data here */ })
+  });
+  
+  status.innerText = "Generating Script...";
+  // 2. Handle download logic for .json and .jsx
+};
+</script>
