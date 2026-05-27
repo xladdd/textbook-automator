@@ -1,199 +1,46 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Textbook Compiler</title>
-    <style>
-      @keyframes gradient {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-      body {
-        font-family: Verdana, sans-serif;
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(-45deg, #ff661a, #ff945e, #ffffff, #f2f2f2);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
-      }
-      .container {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        text-align: center;
-        width: 420px;
-      }
-      .upload-group {
-        margin: 25px 0;
-      }
-      .file-label {
-        display: block;
-        margin-bottom: 10px;
-        font-size: 0.85em;
-        color: #555;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      input[type="file"] {
-        display: none;
-      }
-      .custom-btn {
-        background: white;
-        border: 2px solid #ff661a;
-        color: #ff661a;
-        padding: 12px 25px;
-        border-radius: 50px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-block;
-        font-weight: bold;
-      }
-      .custom-btn:hover {
-        background: #ff661a;
-        color: white;
-      }
-      .loaded {
-        background-color: #00a5a0 !important;
-        color: white !important;
-        border: 2px solid #00a5a0 !important;
-      }
+import OpenAI from 'openai';
+import fs from 'fs';
+import path from 'path';
 
-      #runBtn {
-        background: #ff661a;
-        color: white;
-        border: none;
-        padding: 15px 50px;
-        border-radius: 50px;
-        margin-top: 30px;
-        cursor: pointer;
-        font-weight: bold;
-        text-transform: uppercase;
-        width: 100%;
-      }
-      #runBtn:hover {
-        background: #e55a00;
-      }
-      #status {
-        margin-top: 25px;
-        font-size: 0.8em;
-        color: #777;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2 style="color: #333; margin-bottom: 30px">Textbook Compiler</h2>
+export default async function handler(req, res) {
+  // Ensure we always return JSON, even if we crash
+  res.setHeader('Content-Type', 'application/json');
 
-      <div class="upload-group">
-        <label class="file-label">Manuscript PDF</label>
-        <label class="custom-btn" id="pdfLabel" for="pdfInput"
-          >Choose File</label
-        >
-        <input type="file" id="pdfInput" accept=".pdf" />
-      </div>
+  console.log("[Backend] Log: Request started");
 
-      <div class="upload-group">
-        <label class="file-label">Type-to-Snippet Map (CSV)</label>
-        <label class="custom-btn" id="csvLabel" for="csvInput"
-          >Choose File</label
-        >
-        <input type="file" id="csvInput" accept=".csv" />
-      </div>
+  try {
+    const { task, data } = req.body;
+    console.log("[Backend] Log: Task is", task);
 
-      <button id="runBtn">COMPILE AUTOMATION</button>
-      <div id="status">Ready to initialize</div>
-    </div>
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is missing in Environment Variables");
+    }
 
-    <script>
-      // 1. File Handling Logic
-      const setupFileHandler = (inputId, labelId) => {
-        document.getElementById(inputId).addEventListener("change", (e) => {
-          if (e.target.files.length > 0) {
-            console.log(
-              `[Event] File registered for ${inputId}:`,
-              e.target.files[0].name,
-            );
-            const label = document.getElementById(labelId);
-            label.innerText = "File loaded";
-            label.classList.add("loaded");
-          }
-        });
-      };
-      setupFileHandler("pdfInput", "pdfLabel");
-      setupFileHandler("csvInput", "csvLabel");
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const promptFilename = task === 'manifest' ? 'manifest_prompt.md' : 'script_prompt.md';
+    const promptPath = path.join(process.cwd(), 'prompts', promptFilename);
 
-      // 2. Compilation Pipeline
-      document.getElementById("runBtn").onclick = async () => {
-        console.log("[Event] Button clicked: COMPILE AUTOMATION");
-        const status = document.getElementById("status");
-        const pdfFile = document.getElementById("pdfInput").files[0];
-        const csvFile = document.getElementById("csvInput").files[0];
+    console.log("[Backend] Log: Attempting to read file at", promptPath);
+    
+    if (!fs.existsSync(promptPath)) {
+      throw new Error(`Prompt file missing at ${promptPath}`);
+    }
 
-        if (!pdfFile || !csvFile) {
-          console.warn("[Process] User tried to run without files");
-          return alert("Please select both files first!");
-        }
+    const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Process: ${JSON.stringify(data)}` }
+      ],
+    });
 
-        status.innerText = "Reading files...";
+    return res.status(200).json({ output: completion.choices[0].message.content });
 
-        const reader = (file) =>
-          new Promise((resolve) => {
-            const fr = new FileReader();
-            fr.onload = () => resolve(fr.result);
-            fr.readAsText(file);
-          });
-
-        try {
-          console.log("[Process] Reading CSV data...");
-          const csvData = await reader(csvFile);
-
-          status.innerText = "Generating Manifest...";
-          console.log("[Process] Fetching Manifest from backend...");
-
-          const manifestRes = await fetch("/api/compile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task: "manifest", data: { csv: csvData } }),
-          });
-
-          const manifestJson = await manifestRes.json();
-          console.log("[Response] Manifest Received:", manifestJson);
-
-          status.innerText = "Generating ExtendScript...";
-          const scriptRes = await fetch("/api/compile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task: "script", data: manifestJson.output }),
-          });
-
-          const scriptData = await scriptRes.json();
-          console.log("[Response] Script Received:", scriptData);
-
-          status.innerText = "Download triggered.";
-          const blob = new Blob([scriptData.output], { type: "text/plain" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "automation.jsx";
-          a.click();
-          console.log("[Process] Download completed");
-        } catch (err) {
-          console.error("[Pipeline Error] Critical failure:", err);
-          status.innerText = "Process Failed: See Console";
-        }
-      };
-    </script>
-  </body>
-</html>
+  } catch (err) {
+    console.error("[Backend] CRITICAL ERROR:", err.message);
+    // Return the actual error message so the browser console prints it instead of SyntaxError
+    return res.status(500).json({ error: err.message });
+  }
+}
