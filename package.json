@@ -1,5 +1,26 @@
 {
   "dependencies": {
-    "openai": "^4.0.0"
-  }
+    "dotenv": "^17.4.2",
+    "openai": "^4.104.0"
+  },
+  "name": "textbook-automator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xladdd/textbook-automator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/xladdd/textbook-automator/issues"
+  },
+  "homepage": "https://github.com/xladdd/textbook-automator#readme"
 }
