@@ -14,6 +14,12 @@ export default async function handler(req, res) {
     // 1. Determine Prompt Path
     const promptFilename = task === 'manifest' ? 'manifest_prompt.md' : 'script_prompt.md';
     const promptPath = path.join(process.cwd(), 'prompts', promptFilename);
+    
+    // --- UPDATED LINES START ---
+    const stats = fs.statSync(promptPath);
+    console.log(`[Backend] -> Using prompt: ${promptFilename} | Last Saved: ${stats.mtime.toLocaleString()}`);
+    // --- UPDATED LINES END ---
+
     console.log(`[Backend] -> Reading system prompt from: ${promptPath}`);
     
     // 2. Read System Prompt
@@ -39,8 +45,8 @@ export default async function handler(req, res) {
     console.log(`[Backend] -> Successfully generated output for task: ${task}. Tokens used: ${completion.usage.total_tokens}`);
     res.status(200).json({ output });
 
-  } catch (err) {
-    console.error(`[Backend Error] -> Task: ${task} | Details: ${err.message}`);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error(`[Backend] -> Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
   }
 }
