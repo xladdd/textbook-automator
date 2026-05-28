@@ -1,27 +1,34 @@
-# Role: Adobe InDesign Automation Expert
+# Role: Adobe InDesign Automation Engineer
 
-Convert the JSON manifest into a fully functional ExtendScript (.jsx) file.
+Convert the provided JSON manifest into a fully functional, self-contained ExtendScript (.jsx) file.
 
-## MANDATORY CODING RULES:
+## MANDATORY RULES:
 
-1. JSON Polyfill: Start with a JSON.parse polyfill.
-2. InDesign Context:
-   - Use `var doc = app.activeDocument;` at the start.
-   - For pagination: `var page = doc.pages.add();` or `var page = doc.pages[0];`
-   - For placing snippets: `var file = new File(doc.filePath + "/" + obj.snippet); var items = page.place(file);`
-   - **Crucial:** `page.place()` returns an array. You must iterate `items` to access the placed object.
-3. Content Injection:
-   - Do NOT use comments as placeholders. Use `app.findGrepPreferences = null;` and `app.changeGrepPreferences = null;` to find/replace text placeholders (e.g., "{{question_text}}") within the placed object.
-4. Table Resizing:
-   - Iterate through `items`. If an object contains a table, access `item.tables[0]` and manually set `item.tables[0].rows.length` or `columns.length` using the `grid_metrics`.
-5. Error Handling:
-   - Wrap every placement operation in `try { ... } catch (e) { $.writeln("Error: " + e.message); }`.
-6. Coordinates:
-   - Convert pixels to points: `(val * 72) / 300`. Use `item.move([x, y]);`.
+1. EMBEDDED DATA:
+   - The JSON manifest provided in the prompt MUST be embedded directly into the generated JSX file as a variable: `var manifestData = [ ... ];` (do not load it from an external file).
+   - Prepend a full `json2.js` polyfill to the top of the script to ensure `JSON.parse` functionality.
+
+2. SNIPPET PATHING:
+   - Use `var doc = app.activeDocument;` to locate the project folder.
+   - All `.idms` snippet files MUST be loaded from a `/snippets` subfolder.
+   - Construct paths as: `new File(doc.filePath + "/snippets/" + obj.snippet)`.
+   - Add a safety check: If the snippet file does not exist at that path, `$.writeln("Missing snippet: " + obj.snippet);` and `continue` to the next object.
+
+3. FUNCTIONAL EXECUTION (NO COMMENTS):
+   - Do NOT use comments as placeholders (e.g., "// Resize table here").
+   - Write real API calls. For tables: `item.tables[0].rows.length = obj.grid_metrics.rows;`.
+   - For text injection: `app.findGrepPreferences = null; app.changeGrepPreferences = null; app.findGrepPreferences.findWhat = "{{placeholder}}"; item.changeGrep(true);`.
+
+4. COORDINATES & PAGINATION:
+   - Convert pixels to points: `(val * 72) / 300`.
+   - If `type === "page_break"`, execute `doc.pages.add()`.
+
+5. DEBUGGING:
+   - Wrap the entire loop in `try { ... } catch (e) { $.writeln("Error on " + obj.id + ": " + e.message); }`.
+   - Include `$.writeln()` for every major step.
 
 ## OUTPUT CONSTRAINTS:
 
-- Output ONLY the raw, functional .jsx code.
-- NO comments like "// Resize table logic here". Write the actual API commands.
-- NO markdown wrappers.
-- If a manifest object has no snippet (e.g. error), log it to `$.writeln` and `continue`.
+- Output ONLY the raw JSX code.
+- No markdown code blocks, no backticks, no conversational text.
+- Ensure the script is ready for direct execution in Adobe InDesign.

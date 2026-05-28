@@ -20,3 +20,7 @@
 - Right-click "User" and select **Reveal in Finder/Explorer**.
 - Drop `automation.jsx` into that folder.
 - Double-click it in InDesign to execute.
+
+When you generate the script next, open it in a text editor. You should see a giant block of JSON code right at the top under var manifestData = [...]. If you see that, you're good to go.
+
+also: snippets must always be located in the same folder as the indesign file, all in a separate folder called snippets
