@@ -1,145 +1,41 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <style>
-      body {
-        font-family: sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        background: #f4f4f4;
-      }
-      .container {
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        width: 400px;
-      }
-      .custom-btn {
-        background: white;
-        border: 2px solid #ff661a;
-        color: #ff661a;
-        padding: 10px 20px;
-        border-radius: 50px;
-        cursor: pointer;
-        display: inline-block;
-        margin: 10px;
-      }
-      .loaded {
-        background: #00a5a0 !important;
-        color: white !important;
-        border: 2px solid #00a5a0 !important;
-      }
-      #runBtn {
-        background: #ff661a;
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 50px;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 20px;
-      }
-
-      /* Gradient Wash Animation */
-      @keyframes wash {
-        0% {
-          background-position: -200% 0;
-        }
-        100% {
-          background-position: 200% 0;
-        }
-      }
-      #status {
-        font-weight: bold;
-        margin-top: 20px;
-        background: linear-gradient(90deg, #333 0%, #00a5a0 50%, #333 100%);
-        background-size: 200% auto;
-        color: transparent;
-        -webkit-background-clip: text;
-        animation: wash 3s linear infinite;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
-    <div class="container">
-      <h2>Textbook Compiler</h2>
-      <label class="custom-btn" id="pdfLabel" for="pdfInput"
-        >Choose Manuscript</label
-      >
-      <input type="file" id="pdfInput" style="display: none" />
-      <label class="custom-btn" id="csvLabel" for="csvInput"
-        >Choose CSV Map</label
-      >
-      <input type="file" id="csvInput" style="display: none" />
-      <button id="runBtn">COMPILE AUTOMATION</button>
-      <div id="status">Ready to initialize</div>
+    <div class="sidebar">
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
+      <div class="square"></div>
     </div>
 
-    <script>
-      const log = (msg) => {
-        console.log(`[Frontend] ${msg}`);
-        return msg;
-      };
-
-      // File UI logic
-      ["pdfInput", "csvInput"].forEach((id) =>
-        document.getElementById(id).addEventListener("change", (e) => {
-          document.getElementById(id.replace("Input", "Label")).innerText =
-            "File loaded";
-          document
-            .getElementById(id.replace("Input", "Label"))
-            .classList.add("loaded");
-          log(`${id} file selected.`);
-        }),
-      );
-
-      document.getElementById("runBtn").onclick = async () => {
-        const status = document.getElementById("status");
-        const csvText = await new Response(
-          document.getElementById("csvInput").files[0],
-        ).text();
-
-        try {
-          status.innerText = log("Step 1/2: Generating Manifest...");
-          const mRes = await fetch("/api/compile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task: "manifest", data: { csv: csvText } }),
-          });
-          const mJson = await mRes.json();
-
-          status.innerText = log("Buffer: Waiting...");
-          await new Promise((r) => setTimeout(r, 2000));
-
-          status.innerText = log("Step 2/2: Generating Script...");
-          const sRes = await fetch("/api/compile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task: "script", data: mJson.output }),
-          });
-          const sJson = await sRes.json();
-
-          // Dual Download
-          const triggerDl = (content, name) => {
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(new Blob([content]));
-            a.download = name;
-            a.click();
-          };
-
-          triggerDl(JSON.stringify(mJson.output, null, 2), "manifest.json");
-          triggerDl(sJson.output, "automation.jsx");
-
-          status.innerText = log("Finished! Files downloaded.");
-        } catch (e) {
-          status.innerText = log("Error - Check Console");
-          console.error(e);
-        }
-      };
-    </script>
+    <div class="wrapper">
+      <div class="app-col">
+        <h2>What are we working on today?</h2>
+        <select class="dropdown">
+          <option>Manuscript to InDesign</option>
+        </select>
+        <label class="custom-btn" id="pdfLabel" for="pdfInput"
+          >Choose Manuscript</label
+        >
+        <input type="file" id="pdfInput" style="display: none" />
+        <label class="custom-btn" id="csvLabel" for="csvInput"
+          >Choose CSV Map</label
+        >
+        <input type="file" id="csvInput" style="display: none" />
+        <button id="runBtn">Let's go!</button>
+        <div id="status">Ready to initialize</div>
+      </div>
+      <div class="guide-col" id="guide"></div>
+    </div>
+    <script src="app.js"></script>
   </body>
 </html>

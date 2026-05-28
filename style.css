@@ -1,0 +1,132 @@
+body {
+  font-family: Verdana, sans-serif;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  background: linear-gradient(-45deg, #ff661a, #ff945e, #ffffff, #f2f2f2);
+  background-size: 400% 400%;
+  animation: bgGradient 15s ease infinite;
+  padding: 20px;
+  box-sizing: border-box;
+  align-items: stretch; /* Aligns children to full height */
+}
+@keyframes bgGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+/* 3-Column Layout */
+/* Sidebar structure */
+.sidebar {
+  width: 8.88vh; /* Matches square width */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Math: 9 squares + 8 gaps. 
+   If gap = 0.125 * square, then 9s + 8(0.125s) = 10s total height.
+   100vh / 10 units = 10vh per unit. 
+   Wait, if we want them to look perfectly square and fit:
+*/
+.square {
+  width: 8.88vh;
+  height: 8.88vh;
+  background: #ff661a;
+  border-radius: 1px;
+}
+
+/* Main Wrapper */
+.wrapper {
+  flex: 1;
+  display: flex;
+  background: white;
+  border-radius: 20px;
+  margin-left: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* App Column (1/3) & Guide Column (2/3) */
+.app-col {
+  width: 33.33%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Changed from center to flex-start */
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.05);
+  z-index: 1;
+}
+.guide-col {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+/* UI Elements */
+.dropdown,
+.custom-btn,
+#runBtn {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 50px;
+  border: 2px solid #ff661a;
+  color: #ff661a;
+  font-weight: bold;
+  margin-bottom: 15px;
+  font-family: Verdana;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  background: white;
+}
+#runBtn {
+  background: #ff661a;
+  color: white;
+}
+.loaded {
+  background: #00a5a0 !important;
+  color: white !important;
+  border-color: #00a5a0 !important;
+}
+#status {
+  font-weight: bold;
+  margin-top: 20px;
+  color: #000;
+  text-align: center;
+}
+.active-status {
+  background: linear-gradient(90deg, #fff 0%, #00a5a0 50%, #fff 100%);
+  background-size: 200% auto;
+  color: transparent !important;
+  -webkit-background-clip: text;
+  animation: wash 3s linear infinite;
+}
+@keyframes wash {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 1. Sidebar responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+  .wrapper {
+    margin-left: 0 !important;
+  } /* Center the main box on mobile */
+}
